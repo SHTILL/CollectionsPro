@@ -25,7 +25,7 @@ public class MailTest {
         user2MailList.add("lol@mail.ru");
         userList.put("user2", user2MailList);
 
-        Map<String, Set<String>> mergedList = Mail.userMerge(userList);
+        Map<String, Set<String>> mergedList = Mail.mergeUsers(userList);
         assertFalse(mergedList.containsKey("user2"));
     }
 
@@ -41,7 +41,7 @@ public class MailTest {
         user2MailList.add("second@mail.com");
         userList.put("user2", user2MailList);
 
-        Map<String, Set<String>> mergedList = Mail.userMerge(userList);
+        Map<String, Set<String>> mergedList = Mail.mergeUsers(userList);
         assertTrue(mergedList.containsKey("user1") && mergedList.containsKey("user2"));
     }
 }

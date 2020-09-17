@@ -37,49 +37,61 @@ public class Mail {
         System.out.println();
 
         System.out.println("Merged Mails' List:");
-        userList = userMerge(userList);
+        userList = mergeUsers(userList);
         System.out.print(userList);
         System.out.println();
     }
 
-    static public Map<String, Set<String>> userMerge(Map<String, Set<String>> initList)
+    static public Map<String, Set<String>> mergeUsers(Map<String, Set<String>> initList)
     {
         //contains mails that were processed and its correspondent users
         Map<String, String> processedMails = new HashMap<>();
 
-        //contains merged mails' list
         Map<String, Set<String>> mergedList = new HashMap<>();
 
-        for (Map.Entry<String, Set<String>> entry: initList.entrySet()) {
-            for (String mail: entry.getValue()) {
-                String curUser = entry.getKey();
-                String existedUser = processedMails.get(mail);
+        for (String user: initList.keySet()) {
+            Set<String> mailList = initList.get(user);
+            String alias = user;
 
-                if (existedUser == null) {
-                    // mail was not processed -> add it to processed list
-                    processedMails.put(mail, curUser);
+            for (String mail: mailList) {
+                String duplicate = processedMails.get(mail);
 
-                    //assign mail to a user
-                    Set<String> list = mergedList.get(curUser);
+                if (duplicate == null) {
+                    processedMails.put(mail, alias);
+
+                    Set<String> list = mergedList.get(alias);
                     if (list == null) {
-                        //create new Set if doesn't exist
-                        mergedList.put(curUser, new HashSet<>(Collections.singletonList(mail)));
+                        mergedList.put(alias, new HashSet<>(Collections.singletonList(mail)));
                     } else {
-                        //add mail to Set if exists
                         list.add(mail);
                     }
                 } else {
-                    Set<String> list = mergedList.get(curUser);
-                    //if current user had unique mails current user consumes all mails of existed user
-                    //if current user didn't have unique mails then do nothing - his not unique email will be consumed by existed user
-                    if (list != null) {
-                        Set<String> existedUserMails = mergedList.get(existedUser);
-                        mergedList.get(curUser).addAll(existedUserMails);
-                        mergedList.remove(existedUser);
-                        for (String existedMail: existedUserMails) {
-                            processedMails.put(existedMail, curUser);
-                        }
+                    Set<String> duplicateMails = mergedList.get(duplicate);
+                    Set<String> aliasMails     = mergedList.get(alias);
+
+                    Set<String> destList, sourceList;
+                    String dest, source;
+                    if (duplicateMails.size() > aliasMails.size()) {
+                        dest = duplicate;
+                        destList = duplicateMails;
+
+                        source = alias;
+                        sourceList = aliasMails;
+                    } else {
+                        dest = alias;
+                        destList = aliasMails;
+
+                        source = duplicate;
+                        sourceList = duplicateMails;
                     }
+
+                    destList.addAll(sourceList);
+                    mergedList.remove(source);
+                    for (String sourceMail: sourceList) {
+                        processedMails.put(sourceMail, dest);
+                    }
+
+                    alias = dest;
                 }
             }
         }
