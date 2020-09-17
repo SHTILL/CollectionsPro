@@ -30,6 +30,29 @@ public class MailTest {
     }
 
     @Test
+    public void whenOneCauseMergeThree() {
+        Map<String, Set<String>> userList = new HashMap<>();
+
+        Set<String> u1 = new HashSet<>();
+        u1.add("U1");
+        u1.add("D1");
+        userList.put("u1", u1);
+
+        Set<String> u2 = new HashSet<>();
+        u1.add("U2");
+        u1.add("D2");
+        userList.put("u2", u2);
+
+        Set<String> u3 = new HashSet<>();
+        u1.add("D1");
+        u1.add("D2");
+        userList.put("u3", u3);
+
+        Map<String, Set<String>> mergedList = Mail.fastMergeUsers(userList);
+        assertTrue(mergedList.containsKey("u1") && !mergedList.containsKey("u2") && !mergedList.containsKey("u3"));
+    }
+
+    @Test
     public void whenAddUniqueEmails() {
         Map<String, Set<String>> userList = new HashMap<>();
 

@@ -37,6 +37,7 @@ public class Mail {
         System.out.println();
 
         System.out.println("Merged Mails' List:");
+        userList = fastMergeUsers(userList);
         userList = mergeUsers(userList);
         System.out.print(userList);
         System.out.println();
@@ -92,6 +93,74 @@ public class Mail {
                     }
 
                     alias = dest;
+                }
+            }
+        }
+        return mergedList;
+    }
+
+    static public Map<String, Set<String>> fastMergeUsers(Map<String, Set<String>> initList)
+    {
+        //contains mails that were processed and its correspondent users
+        Map<String, String> processedMails = new HashMap<>();
+
+        //contains aliases for each user
+        Map<String, Set<String>> aliasesMap = new HashMap<>();
+
+        for (String user: initList.keySet()) {
+            Set<String> mailList = initList.get(user);
+
+            for (String mail : mailList) {
+                String duplicate = processedMails.get(mail);
+
+                if (duplicate == null) {
+                    processedMails.put(mail, user);
+                    aliasesMap.computeIfAbsent(user, u -> new HashSet<>(Collections.singletonList(u)));
+                } else {
+                    Set<String> userAliases = aliasesMap.get(user);
+                    Set<String> duplicateAliases = aliasesMap.get(duplicate);
+
+                    if (userAliases == null && duplicateAliases == null) {
+                        Set<String> aliases = new HashSet<>(Arrays.asList(user, duplicate));
+                        aliasesMap.put(user, aliases);
+                        aliasesMap.put(duplicate, aliases);
+                        continue;
+                    }
+
+                    if (userAliases == null) {
+                        duplicateAliases.add(user);
+                        aliasesMap.put(user, duplicateAliases);
+                        continue;
+                    }
+
+                    if (duplicateAliases == null) {
+                        userAliases.add(duplicate);
+                        aliasesMap.put(duplicate, userAliases);
+                        continue;
+                    }
+
+                    if (duplicateAliases.size() > userAliases.size()) {
+                        duplicateAliases.addAll(userAliases);
+                        aliasesMap.put(user, duplicateAliases);
+                    } else {
+                        userAliases.addAll(duplicateAliases);
+                        aliasesMap.put(duplicate, userAliases);
+                    }
+                }
+            }
+        }
+
+        Map<String, Set<String>> mergedList = new HashMap<>();
+        Set<String> mergedUsers = new HashSet<>();
+
+        for (String k: aliasesMap.keySet()) {
+            Set<String> aliases = aliasesMap.get(k);
+            if (!mergedUsers.contains(k)) {
+                Set<String> mails = new HashSet<>();
+                mergedList.put(k, mails);
+                for (String user : aliases) {
+                    mails.addAll(initList.get(user));
+                    mergedUsers.add(user);
                 }
             }
         }
